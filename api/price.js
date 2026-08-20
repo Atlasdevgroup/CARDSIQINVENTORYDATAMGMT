@@ -17,6 +17,12 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server missing CARDSIQ_API_KEY. Set it in Vercel project settings." });
   }
 
+  // Optional access password: if APP_PASSWORD is set, every call must carry it.
+  const appPw = process.env.APP_PASSWORD;
+  if (appPw && (req.headers["x-app-password"] || "") !== appPw) {
+    return res.status(401).json({ error: "Unauthorized — access password required or incorrect." });
+  }
+
   // Vercel parses JSON bodies automatically for application/json.
   const body = req.body || {};
   const cert = body.cert != null ? String(body.cert).trim() : "";

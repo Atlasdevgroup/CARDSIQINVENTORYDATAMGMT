@@ -1,38 +1,37 @@
-# CardsIQ Inventory Intake
+# CardsIQ Inventory Console (enhanced)
 
-Upload a `grader,cert` CSV, watch each card price in live, see the inventory value assemble.
+A self-contained inventory console. All inventory, cost basis, events, reports,
+views, and settings live in the browser (localStorage). The only server calls are:
 
-The browser never touches the API key. It calls `/api/price` (a Vercel serverless
-function), which adds the `Authorization` header server-side and forwards one cert
-to the CardsIQ pricing API.
+- `POST /api/price` — prices one cert. Reads `{cert, grader}`, returns
+  `{ result: { cert, grader, data: { certification, valuation, market, cardsiq, errors } } }`.
+- `POST /api/auth` — optional access-password check via the `x-app-password` header.
+
+That's the whole "backend": two serverless functions that proxy your pricing API
+and keep the API key server-side. Everything else is client-side.
 
 ## Files
-- `index.html` — the app (static, no build step)
-- `api/price.js` — serverless proxy; reads `CARDSIQ_API_KEY` from the environment
+- `index.html` — the app (localStorage; no build step)
+- `api/price.js` — pricing proxy; adds `Authorization` from `CARDSIQ_API_KEY`
+- `api/auth.js` — password check; on if `APP_PASSWORD` is set, otherwise open
 - `vercel.json` — function config
-- `sample.csv` — a few certs to test with
 
-## Deploy (Vercel CLI)
-
-```powershell
-npm i -g vercel
-cd cardsiq-inventory
-vercel                       # first run: link/create the project, accept defaults
-vercel env add CARDSIQ_API_KEY   # paste the key when prompted; choose Production (and Preview)
-vercel --prod                # deploy to the live URL
+## Deploy (Vercel)
+```bash
+cd cardsiq-enhanced
+vercel                      # or import the folder/repo in the Vercel dashboard
+vercel env add CARDSIQ_API_KEY   # your pricing API key (Production + Preview)
+# optional gate:
+vercel env add APP_PASSWORD      # if set, /api/price requires x-app-password
+vercel --prod
 ```
 
-To change the upstream URL without editing code, also set `CARDSIQ_API_URL`
-(defaults to the current pricing endpoint).
-
-## Deploy (GitHub + dashboard)
-1. Push this folder to a GitHub repo.
-2. vercel.com → New Project → import the repo.
-3. Settings → Environment Variables → add `CARDSIQ_API_KEY`.
-4. Deploy.
-
 ## Notes
-- The **gap (ms)** control paces requests. If cards start returning `err:lookup`,
-  raise it — that error is the upstream rate limit, not a bad cert.
-- Rotate the API key before this is shared with anyone; set the new value with
-  `vercel env rm CARDSIQ_API_KEY` then `vercel env add CARDSIQ_API_KEY`.
+- This app calls `/api/price` **one cert at a time** (it prices in a loop), so a
+  large batch is many function calls. The functions already handle that; if you
+  hit the provider's rate limit, raise the pricing delay in Settings.
+- To move inventory off the browser and onto a real multi-user database
+  (server-persisted, partner-isolated), that's the separate `cardsiq-backend`
+  project — this bundle is the standalone client version.
+- Rotate the pricing API key before sharing; it lives only in the Vercel env var,
+  never in these files.
