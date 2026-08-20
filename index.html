@@ -3,455 +3,610 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CardsIQ · Inventory Intake</title>
+<title>CardsIQ · Inventory Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
-  :root {
-    --navy: #0B1E3F;
-    --navy-2: #0d234a;
-    --panel: #10254c;
-    --panel-2: #142b57;
-    --line: #21365f;
-    --accent: #1FB6FF;
-    --green: #2BE08C;
-    --amber: #FFC24B;
-    --red: #FF5C7A;
-    --text: #EAF1FB;
-    --muted: #8AA0C4;
-    --faint: #5D739B;
-    --grad: linear-gradient(90deg, #1FB6FF 0%, #7A5CFF 55%, #FF5CA8 100%);
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(31,182,255,0.10), transparent 60%),
-      radial-gradient(900px 500px at -5% 10%, rgba(122,92,255,0.08), transparent 55%),
-      var(--navy);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+ :root{
+ --navy:#0B1E3F;--navy-2:#0d234a;--panel:#10254c;--panel-2:#142b57;--line:#21365f;
+ --accent:#1FB6FF;--green:#2BE08C;--amber:#FFC24B;--red:#FF5C7A;--violet:#7A5CFF;
+ --text:#EAF1FB;--muted:#8AA0C4;--faint:#5D739B;
+ --grad:linear-gradient(90deg,#1FB6FF 0%,#7A5CFF 55%,#FF5CA8 100%);
+ }
+ *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+ body{background:radial-gradient(1200px 600px at 80% -10%,rgba(31,182,255,.10),transparent 60%),
+ radial-gradient(900px 500px at -5% 10%,rgba(122,92,255,.08),transparent 55%),var(--navy);
+ color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+ min-height:100vh;-webkit-font-smoothing:antialiased;}
+ .wrap{max-width:1460px;margin:0 auto;padding:24px 22px 90px;}
+ header{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px;}
+ .brand{display:flex;align-items:baseline;gap:12px;}
+ .brand h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:20px;letter-spacing:-.01em;margin:0;}
+ .brand .tm{color:var(--accent);} .brand .sub{color:var(--faint);font-size:12px;font-family:"JetBrains Mono",monospace;}
+ .apihint{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--faint);} .apihint b{color:var(--muted);font-weight:500;}
 
-  /* Header */
-  header { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 22px; }
-  .brand { display: flex; align-items: baseline; gap: 12px; }
-  .brand h1 {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 20px;
-    letter-spacing: -0.01em; margin: 0;
-  }
-  .brand .tm { color: var(--accent); }
-  .brand .sub { color: var(--faint); font-size: 12px; font-family: "JetBrains Mono", monospace; letter-spacing: 0.02em; }
-  .apihint { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); }
-  .apihint b { color: var(--muted); font-weight: 500; }
+ .ticker{position:relative;border:1px solid var(--line);border-radius:16px;
+ background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:20px 22px;margin-bottom:16px;overflow:hidden;}
+ .ticker::before{content:"";position:absolute;left:0;top:0;height:3px;width:100%;background:var(--grad);opacity:.9;}
+ .ticker-grid{display:grid;grid-template-columns:1.7fr 1fr 1fr auto;gap:22px;align-items:end;}
+ .val-label{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin-bottom:7px;}
+ .val-big{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:clamp(30px,5vw,50px);line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+ .val-sub{font-family:"JetBrains Mono",monospace;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+ .val-sub.green{color:var(--green);} .val-sub.red{color:var(--red);}
+ .pct{font-size:12px;font-family:"JetBrains Mono",monospace;margin-left:6px;}
+ .counts{display:flex;gap:16px;} .counts .c{text-align:center;}
+ .counts .c .n{font-family:"JetBrains Mono",monospace;font-size:20px;font-weight:700;}
+ .n.green{color:var(--green);}.n.amber{color:var(--amber);}.n.red{color:var(--red);}
+ .progress{height:5px;border-radius:99px;background:#0a1836;margin-top:16px;overflow:hidden;}
+ .progress>i{display:block;height:100%;width:0;background:var(--grad);transition:width .35s ease;}
+ @media(max-width:820px){.ticker-grid{grid-template-columns:1fr 1fr;}}
 
-  /* Ticker — the signature: inventory value assembles as cards resolve */
-  .ticker {
-    position: relative; border: 1px solid var(--line); border-radius: 16px;
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    padding: 22px 24px; margin-bottom: 18px; overflow: hidden;
-  }
-  .ticker::before {
-    content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 100%;
-    background: var(--grad); opacity: 0.9;
-  }
-  .ticker-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 20px; align-items: end; }
-  .val-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); margin-bottom: 8px; }
-  .val-big {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: clamp(34px, 6vw, 56px); line-height: 0.95; letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-  }
-  .val-big .cents { color: var(--muted); font-size: 0.5em; font-weight: 600; }
-  .stat .n { font-family: "JetBrains Mono", monospace; font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .stat .n.green { color: var(--green); }
-  .stat .n.red { color: var(--red); }
-  .stat .n.accent { color: var(--accent); }
-  @media (max-width: 720px) { .ticker-grid { grid-template-columns: 1fr 1fr; } }
+ .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+ .drop{flex:1 1 260px;min-height:58px;border:1.5px dashed var(--line);border-radius:12px;background:rgba(20,43,87,.5);
+ display:flex;align-items:center;gap:13px;padding:10px 15px;cursor:pointer;transition:.2s;}
+ .drop:hover,.drop.over{border-color:var(--accent);background:rgba(31,182,255,.06);}
+ .drop .ico{width:32px;height:32px;border-radius:9px;background:rgba(31,182,255,.12);display:grid;place-items:center;flex:none;}
+ .drop .ico svg{width:17px;height:17px;stroke:var(--accent);}
+ .drop .t{font-size:13px;line-height:1.4;} .drop .t b{color:var(--text);font-weight:600;}
+ .drop .t span{color:var(--faint);font-family:"JetBrains Mono",monospace;font-size:11px;}
+ .field{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+ .field input,.field select{background:var(--navy-2);color:var(--text);border:1px solid var(--line);border-radius:8px;
+ padding:8px 10px;font-family:"JetBrains Mono",monospace;font-size:12px;}
+ .field input[type=number]{width:64px;}
+ .btn{border:none;border-radius:10px;padding:11px 18px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;transition:transform .06s,filter .2s,opacity .2s;}
+ .btn:active{transform:translateY(1px);}
+ .btn.primary{background:var(--grad);color:#fff;} .btn.primary:disabled{opacity:.4;cursor:not-allowed;}
+ .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);} .btn.ghost:disabled{opacity:.35;cursor:not-allowed;}
 
-  /* Progress */
-  .progress { height: 6px; border-radius: 99px; background: #0a1836; margin-top: 18px; overflow: hidden; }
-  .progress > i { display: block; height: 100%; width: 0%; background: var(--grad); transition: width 0.35s ease; }
+ .filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(13,35,74,.4);}
+ .chips{display:flex;gap:6px;flex-wrap:wrap;}
+ .chip{font-size:12px;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;transition:.15s;}
+ .chip:hover{border-color:var(--accent);color:var(--text);} .chip.active{background:rgba(31,182,255,.14);border-color:var(--accent);color:var(--accent);}
+ .filters .search{flex:1 1 160px;min-width:130px;background:var(--navy-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;}
+ .filters select{background:var(--navy-2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;font-family:"JetBrains Mono",monospace;}
 
-  /* Controls */
-  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-  .drop {
-    flex: 1 1 340px; min-height: 64px; border: 1.5px dashed var(--line); border-radius: 12px;
-    background: rgba(20,43,87,0.5); display: flex; align-items: center; gap: 14px; padding: 12px 16px;
-    cursor: pointer; transition: border-color 0.2s, background 0.2s;
-  }
-  .drop:hover, .drop.over { border-color: var(--accent); background: rgba(31,182,255,0.06); }
-  .drop .ico { width: 34px; height: 34px; border-radius: 9px; background: rgba(31,182,255,0.12); display: grid; place-items: center; flex: none; }
-  .drop .ico svg { width: 18px; height: 18px; stroke: var(--accent); }
-  .drop .t { font-size: 13px; line-height: 1.4; }
-  .drop .t b { color: var(--text); font-weight: 600; }
-  .drop .t span { color: var(--faint); font-family: "JetBrains Mono", monospace; font-size: 11px; }
+ .tablecard{border:1px solid var(--line);border-radius:14px;overflow:auto;background:rgba(13,35,74,.55);}
+ table{width:100%;border-collapse:collapse;font-size:13px;min-width:1220px;}
+ thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.11em;color:var(--faint);font-weight:600;padding:11px 12px;
+ background:rgba(10,24,54,.85);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2;white-space:nowrap;}
+ th.sortable{cursor:pointer;user-select:none;} th.sortable:hover{color:var(--muted);}
+ th .arr{color:var(--accent);font-size:9px;margin-left:3px;}
+ th.num,td.num{text-align:right;font-variant-numeric:tabular-nums;}
+ tbody td{padding:9px 12px;border-bottom:1px solid rgba(33,54,95,.5);vertical-align:middle;white-space:nowrap;}
+ tbody tr.main{cursor:pointer;}
+ tbody tr.main:hover td{background:rgba(31,182,255,.03);}
+ tbody tr.hidden{display:none;}
+ tbody tr.pending{opacity:.5;}
+ tbody tr.done{animation:settle .5s ease;} @keyframes settle{from{background:rgba(43,224,140,.10);}to{background:transparent;}}
+ tbody tr.err{animation:settleErr .5s ease;} @keyframes settleErr{from{background:rgba(255,92,122,.10);}to{background:transparent;}}
+ tbody tr.main.flagged td{background:rgba(255,92,122,.05);}
+ tbody tr.main.confirmed td{background:rgba(43,224,140,.04);}
+ .cert{font-family:"JetBrains Mono",monospace;font-weight:500;}
+ .grader{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-transform:uppercase;}
+ .label{color:var(--text);max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+ .yr{font-family:"JetBrains Mono",monospace;color:var(--muted);font-size:12px;}
+ .money{font-family:"JetBrains Mono",monospace;font-weight:700;}
+ .conf{font-family:"JetBrains Mono",monospace;font-size:11px;}
+ .comps{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);}
+ .comps.na{color:var(--faint);}
+ .pl.pos{color:var(--green);} .pl.neg{color:var(--red);} .plpct{font-size:10px;color:var(--faint);}
+ .expand{color:var(--faint);font-size:10px;margin-right:6px;display:inline-block;width:8px;transition:transform .15s;}
+ tr.main.open .expand{transform:rotate(90deg);color:var(--accent);}
 
-  .field { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
-  .field select, .field input {
-    background: var(--navy-2); color: var(--text); border: 1px solid var(--line);
-    border-radius: 8px; padding: 8px 10px; font-family: "JetBrains Mono", monospace; font-size: 12px;
-  }
-  .field input[type="number"] { width: 78px; }
+ .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle;}
+ .dot.wait{background:var(--faint);}.dot.ok{background:var(--green);}.dot.review{background:var(--amber);}.dot.bad{background:var(--red);}
+ .dot.load{background:var(--accent);animation:pulse 1s ease-in-out infinite;}
+ @keyframes pulse{0%,100%{opacity:.35;transform:scale(.8);}50%{opacity:1;transform:scale(1.15);}}
+ .st{font-size:11px;font-family:"JetBrains Mono",monospace;}
+ .st.ok{color:var(--green);}.st.bad{color:var(--red);}.st.wait{color:var(--faint);}.st.load{color:var(--accent);}.st.review{color:var(--amber);}
+ .spinner{width:12px;height:12px;border:2px solid rgba(31,182,255,.25);border-top-color:var(--accent);border-radius:50%;display:inline-block;vertical-align:-2px;animation:spin .7s linear infinite;}
+ @keyframes spin{to{transform:rotate(360deg);}}
 
-  .btn {
-    border: none; border-radius: 10px; padding: 12px 20px; font-weight: 600; font-size: 13px;
-    cursor: pointer; font-family: inherit; letter-spacing: 0.01em; transition: transform 0.06s, filter 0.2s, opacity 0.2s;
-  }
-  .btn:active { transform: translateY(1px); }
-  .btn.primary { background: var(--grad); color: #fff; }
-  .btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
-  .btn.ghost:disabled { opacity: 0.35; cursor: not-allowed; }
+ .audit{display:flex;gap:5px;}
+ .abtn{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:transparent;cursor:pointer;display:grid;place-items:center;transition:.15s;padding:0;}
+ .abtn svg{width:14px;height:14px;stroke:var(--faint);fill:none;stroke-width:2.4;}
+ .abtn.confirm:hover{border-color:var(--green);} .abtn.confirm:hover svg{stroke:var(--green);}
+ .abtn.flag:hover{border-color:var(--red);} .abtn.flag:hover svg{stroke:var(--red);}
+ .abtn.on-confirm{background:rgba(43,224,140,.16);border-color:var(--green);} .abtn.on-confirm svg{stroke:var(--green);}
+ .abtn.on-flag{background:rgba(255,92,122,.16);border-color:var(--red);} .abtn.on-flag svg{stroke:var(--red);}
 
-  /* Table */
-  .tablecard { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: rgba(13,35,74,0.55); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th {
-    text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint);
-    font-weight: 600; padding: 12px 14px; background: rgba(10,24,54,0.6); border-bottom: 1px solid var(--line);
-    position: sticky; top: 0; z-index: 2;
-  }
-  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  tbody td { padding: 11px 14px; border-bottom: 1px solid rgba(33,54,95,0.5); vertical-align: middle; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr { transition: background 0.25s; }
-  tbody tr.pending { opacity: 0.5; }
-  tbody tr.done { animation: settle 0.5s ease; }
-  @keyframes settle { from { background: rgba(43,224,140,0.10); } to { background: transparent; } }
-  tbody tr.err { animation: settleErr 0.5s ease; }
-  @keyframes settleErr { from { background: rgba(255,92,122,0.10); } to { background: transparent; } }
+ .cost-in{width:82px;background:var(--navy-2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:6px 8px;font-family:"JetBrains Mono",monospace;font-size:12px;text-align:right;}
+ .cost-in:focus{outline:none;border-color:var(--accent);}
+ .sport-in{background:var(--navy-2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:6px 6px;font-size:11px;font-family:inherit;}
+ .sport-in.guess{color:var(--muted);font-style:italic;}
 
-  .cert { font-family: "JetBrains Mono", monospace; font-weight: 500; }
-  .grader { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; }
-  .label { color: var(--text); max-width: 380px; }
-  .money { font-family: "JetBrains Mono", monospace; font-weight: 700; }
-  .conf { font-family: "JetBrains Mono", monospace; font-size: 11px; }
+ /* detail row */
+ tr.detail>td{padding:0;background:rgba(8,20,44,.6);border-bottom:1px solid rgba(33,54,95,.5);}
+ .detail-inner{padding:14px 18px 16px 44px;display:grid;grid-template-columns:1.2fr 1fr;gap:26px;}
+ .detail h4{margin:0 0 8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+ .sales-list{list-style:none;margin:0;padding:0;}
+ .sales-list li{display:flex;justify-content:space-between;gap:14px;padding:5px 0;border-bottom:1px dashed rgba(33,54,95,.5);font-family:"JetBrains Mono",monospace;font-size:12px;}
+ .sales-list li:last-child{border-bottom:none;}
+ .sales-list .sd{color:var(--muted);} .sales-list .sp{font-weight:700;} .sales-list .spf{color:var(--faint);font-size:11px;}
+ .na{color:var(--faint);font-family:"JetBrains Mono",monospace;font-size:12px;font-style:italic;}
+ .reasons{display:flex;flex-direction:column;gap:6px;}
+ .reason{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--text);}
+ .reason .rd{width:6px;height:6px;border-radius:50%;background:var(--amber);flex:none;}
+ .reason.clean .rd{background:var(--green);}
+ .ctx{margin-top:10px;font-size:11px;color:var(--faint);font-family:"JetBrains Mono",monospace;}
+ @media(max-width:820px){.detail-inner{grid-template-columns:1fr;}}
 
-  /* Status chips + dots */
-  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
-  .dot.wait { background: var(--faint); }
-  .dot.load { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
-  .dot.ok { background: var(--green); }
-  .dot.review { background: var(--amber); }
-  .dot.bad { background: var(--red); }
-  @keyframes pulse { 0%,100% { opacity: 0.35; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
-  .st { font-size: 11px; font-family: "JetBrains Mono", monospace; }
-  .st.ok { color: var(--green); } .st.bad { color: var(--red); } .st.wait { color: var(--faint); } .st.load { color: var(--accent); } .st.review { color: var(--amber); }
-
-  .spinner { width: 13px; height: 13px; border: 2px solid rgba(31,182,255,0.25); border-top-color: var(--accent); border-radius: 50%; display: inline-block; vertical-align: -2px; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .empty { padding: 46px 20px; text-align: center; color: var(--faint); font-size: 13px; }
-  .empty svg { width: 30px; height: 30px; stroke: var(--line); margin-bottom: 10px; }
-
-  .foot { margin-top: 14px; font-size: 11px; color: var(--faint); font-family: "JetBrains Mono", monospace; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+ .empty{padding:44px 20px;text-align:center;color:var(--faint);font-size:13px;}
+ .empty svg{width:30px;height:30px;stroke:var(--line);margin-bottom:10px;}
+ .foot{margin-top:12px;font-size:11px;color:var(--faint);font-family:"JetBrains Mono",monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+ @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="brand">
-      <h1>CardsIQ<span class="tm">™</span> Inventory Intake</h1>
-      <span class="sub">graded cert → live valuation</span>
-    </div>
-    <div class="apihint">via <b>/api/price</b> · key held server-side</div>
-  </header>
+ <header>
+ <div class="brand">
+ <h1>CardsIQ<span class="tm">™</span> Inventory Console</h1>
+ <span class="sub">price · audit · cost-basis · P&amp;L</span>
+ </div>
+ <div class="apihint">via <b>/api/price</b> · key server-side · edits saved to this browser</div>
+ </header>
 
-  <!-- Signature: the value assembles as cards resolve -->
-  <section class="ticker">
-    <div class="ticker-grid">
-      <div>
-        <div class="val-label">Inventory value priced</div>
-        <div class="val-big" id="valBig">$0<span class="cents"></span></div>
-      </div>
-      <div class="stat"><div class="val-label">Priced</div><div class="n green" id="cOk">0</div></div>
-      <div class="stat"><div class="val-label">Needs review</div><div class="n" id="cReview" style="color:var(--amber)">0</div></div>
-      <div class="stat"><div class="val-label">Errors</div><div class="n red" id="cErr">0</div></div>
-    </div>
-    <div class="progress"><i id="bar"></i></div>
-  </section>
+ <section class="ticker">
+ <div class="ticker-grid">
+ <div><div class="val-label">Inventory market value</div><div class="val-big" id="valBig">$0</div></div>
+ <div><div class="val-label">Total cost basis</div><div class="val-sub" id="costTot">$0</div></div>
+ <div><div class="val-label">Unrealized P&amp;L</div><div class="val-sub" id="plTot">$0<span class="pct" id="plPct"></span></div></div>
+ <div class="counts">
+ <div class="c"><div class="val-label">Priced</div><div class="n green" id="cOk">0</div></div>
+ <div class="c"><div class="val-label">Review</div><div class="n amber" id="cReview">0</div></div>
+ <div class="c"><div class="val-label">Errors</div><div class="n red" id="cErr">0</div></div>
+ </div>
+ </div>
+ <div class="progress"><i id="bar"></i></div>
+ </section>
 
-  <div class="controls">
-    <label class="drop" id="drop">
-      <input type="file" id="file" accept=".csv,text/csv" hidden />
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg></span>
-      <span class="t"><b>Drop a CSV or click to choose</b><br><span>format: grader,cert  (e.g. PSA,115730219)</span></span>
-    </label>
-    <div class="field">
-      <span>gap</span>
-      <input type="number" id="delay" value="500" min="0" step="100" title="Milliseconds between lookups" />
-      <span>ms</span>
-    </div>
-    <button class="btn primary" id="run" disabled>Start pricing</button>
-    <button class="btn ghost" id="stop" disabled>Stop</button>
-    <button class="btn ghost" id="export" disabled>Export CSV</button>
-  </div>
+ <div class="controls">
+ <label class="drop" id="drop">
+ <input type="file" id="file" accept=".csv,text/csv" hidden />
+ <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg></span>
+ <span class="t"><b>Drop a CSV or click to choose</b><br><span>grader,cert — optional 3rd column: cost</span></span>
+ </label>
+ <div class="field"><span>gap</span><input type="number" id="delay" value="500" min="0" step="100" /><span>ms</span></div>
+ <div class="field"><span>review ≤ conf</span><input type="number" id="rthresh" value="2" min="0" max="5" /></div>
+ <div class="field"><span>value gap ≥</span><input type="number" id="rgap" value="30" min="0" max="100" /><span>%</span></div>
+ <button class="btn primary" id="run" disabled>Start pricing</button>
+ <button class="btn ghost" id="stop" disabled>Stop</button>
+ <button class="btn ghost" id="export" disabled>Export CSV</button>
+ </div>
 
-  <div class="tablecard">
-    <table>
-      <thead>
-        <tr>
-          <th style="width:150px">Status</th>
-          <th style="width:120px">Cert</th>
-          <th style="width:60px">Grader</th>
-          <th>Card</th>
-          <th class="num" style="width:110px">CL Value</th>
-          <th class="num" style="width:110px">Last Sale</th>
-          <th class="num" style="width:70px">Conf</th>
-        </tr>
-      </thead>
-      <tbody id="rows">
-        <tr><td colspan="7"><div class="empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h10"/></svg><br>
-          No cards loaded. Drop a CSV to begin.
-        </div></td></tr>
-      </tbody>
-    </table>
-  </div>
+ <div class="filters">
+ <div class="chips" id="statusChips">
+ <button class="chip active" data-status="all">All</button>
+ <button class="chip" data-status="priced">Priced</button>
+ <button class="chip" data-status="review">Review</button>
+ <button class="chip" data-status="queue">Review queue</button>
+ <button class="chip" data-status="error">Errors</button>
+ <button class="chip" data-status="confirmed">Confirmed</button>
+ <button class="chip" data-status="flagged">Flagged</button>
+ </div>
+ <select id="graderFilter"><option value="">All graders</option></select>
+ <select id="sportFilter"><option value="">All sports</option></select>
+ <input class="search" id="search" placeholder="Search player / card / cert…" />
+ </div>
 
-  <div class="foot">
-    <span id="footL">0 rows</span>
-    <span id="footR">idle</span>
-  </div>
+ <div class="tablecard">
+ <table>
+ <thead>
+ <tr>
+ <th style="width:118px">Status</th>
+ <th style="width:70px">Audit</th>
+ <th class="sortable" data-sort="cert" style="width:108px">Cert</th>
+ <th style="width:48px">Grd</th>
+ <th class="sortable" data-sort="label">Card</th>
+ <th class="sortable" data-sort="year" style="width:58px">Year</th>
+ <th style="width:100px">Sport</th>
+ <th class="sortable num" data-sort="value" style="width:100px">CL Value</th>
+ <th class="sortable num" data-sort="last" style="width:92px">Last Sale</th>
+ <th class="sortable num" data-sort="conf" style="width:56px">Conf</th>
+ <th class="num" style="width:64px">Comps</th>
+ <th class="num" style="width:96px">Cost</th>
+ <th class="sortable num" data-sort="pl" style="width:108px">P&amp;L</th>
+ </tr>
+ </thead>
+ <tbody id="rows">
+ <tr><td colspan="13"><div class="empty">
+ <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h10"/></svg><br>
+ No cards loaded. Drop a CSV to begin.
+ </div></td></tr>
+ </tbody>
+ </table>
+ </div>
+
+ <div class="foot"><span id="footL">0 rows</span><span id="footR">idle</span></div>
 </div>
 
 <script>
 (() => {
-  const $ = (id) => document.getElementById(id);
-  const fileEl = $("file"), drop = $("drop"), rowsEl = $("rows");
-  const runBtn = $("run"), stopBtn = $("stop"), exportBtn = $("export");
-  const barEl = $("bar"), valBig = $("valBig");
-  const cOk = $("cOk"), cReview = $("cReview"), cErr = $("cErr");
-  const footL = $("footL"), footR = $("footR"), delayEl = $("delay");
+ const $=(id)=>document.getElementById(id);
+ const rowsEl=$("rows"),fileEl=$("file"),drop=$("drop");
+ const runBtn=$("run"),stopBtn=$("stop"),exportBtn=$("export"),delayEl=$("delay");
+ const rthreshEl=$("rthresh"),rgapEl=$("rgap");
+ const barEl=$("bar"),valBig=$("valBig"),costTot=$("costTot"),plTot=$("plTot"),plPct=$("plPct");
+ const cOk=$("cOk"),cReview=$("cReview"),cErr=$("cErr");
+ const footL=$("footL"),footR=$("footR"),searchEl=$("search");
+ const graderFilter=$("graderFilter"),sportFilter=$("sportFilter"),statusChips=$("statusChips");
 
-  let queue = [];        // [{cert, grader, tr, cells, state, data}]
-  let running = false, stopped = false;
-  let totalValue = 0, okCount = 0, reviewCount = 0, errCount = 0, doneCount = 0;
+ const STORE_KEY="cardsiq_inventory_v1";
+ let store={}; try{store=JSON.parse(localStorage.getItem(STORE_KEY)||"{}");}catch{store={};}
+ const saveStore=()=>{try{localStorage.setItem(STORE_KEY,JSON.stringify(store));}catch{}};
+ const skey=(g,c)=>g.toLowerCase()+":"+c;
 
-  // ---- CSV parsing: grader,cert per line; tolerant of header + stray spaces ----
-  function parseCSV(text) {
-    const out = [];
-    for (const raw of text.split(/\r?\n/)) {
-      const line = raw.trim();
-      if (!line) continue;
-      const parts = line.split(",").map(s => s.trim());
-      if (parts.length < 2) continue;
-      let [a, b] = parts;
-      // Accept either "grader,cert" or "cert,grader"; grader is the non-numeric one.
-      let grader, cert;
-      if (/^\d+$/.test(a) && !/^\d+$/.test(b)) { cert = a; grader = b; }
-      else { grader = a; cert = b; }
-      grader = grader.toLowerCase();
-      if (!/^(psa|bgs|sgc|cgc)$/.test(grader)) continue;   // skip header/junk lines
-      if (!/^\d+$/.test(cert)) continue;
-      out.push({ cert, grader });
-    }
-    return out;
-  }
+ let cards=[],running=false,stopped=false,doneCount=0;
+ let sortCol=null,sortDir=-1;
+ let filter={status:"all",grader:"",sport:"",q:""};
+ let reviewThreshold=2, gapThreshold=0.30;
 
-  function fmtMoney(n) {
-    if (n == null || isNaN(n)) return "—";
-    return "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
-  }
+ const SPORTS=["","Football","Basketball","Baseball","Hockey","Soccer","Other"];
 
-  function renderTable(items) {
-    rowsEl.innerHTML = "";
-    queue = items.map((it) => {
-      const tr = document.createElement("tr");
-      tr.className = "pending";
-      tr.innerHTML =
-        '<td><span class="dot wait"></span><span class="st wait">queued</span></td>' +
-        '<td class="cert">' + it.cert + '</td>' +
-        '<td class="grader">' + it.grader + '</td>' +
-        '<td class="label">—</td>' +
-        '<td class="num money">—</td>' +
-        '<td class="num money">—</td>' +
-        '<td class="num conf">—</td>';
-      rowsEl.appendChild(tr);
-      return {
-        cert: it.cert, grader: it.grader, tr,
-        statusCell: tr.children[0], labelCell: tr.children[3],
-        clCell: tr.children[4], lastCell: tr.children[5], confCell: tr.children[6],
-        data: null,
-      };
-    });
-    footL.textContent = queue.length + " rows";
-    runBtn.disabled = queue.length === 0;
-    exportBtn.disabled = true;
-  }
+ function parseYear(l){const m=String(l||"").match(/\b((?:19|20)\d{2})(?:-\d{2})?\b/);return m?m[1]:"";}
+ function guessSport(l){const s=String(l||"").toLowerCase();
+ if(/bowman/.test(s))return "Baseball";
+ if(/(metal universe|hoops|jam session|nba|basketball)/.test(s))return "Basketball";
+ if(/(topps chrome|topps update|stadium club baseball|mlb|baseball)/.test(s))return "Baseball";
+ if(/(nfl|football|donruss football|prizm football)/.test(s))return "Football";
+ return "";}
+ function fmtMoney(n){if(n==null||isNaN(n))return "—";return "$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:0});}
+ function fmtDate(d){ if(!d)return ""; const t=new Date(d); if(isNaN(t))return String(d);
+ return t.toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"}); }
 
-  function resetCounters() {
-    totalValue = okCount = reviewCount = errCount = doneCount = 0;
-    valBig.innerHTML = "$0";
-    cOk.textContent = cReview.textContent = cErr.textContent = "0";
-    barEl.style.width = "0%";
-  }
+ // ---- REVIEW LOGIC ----
+ function evalReview(card){
+ const r=[];
+ if(card.serverReview) r.push("pricer flagged for review");
+ if(card.conf==null) r.push("no confidence score returned");
+ else if(card.conf<=reviewThreshold) r.push("low confidence "+card.conf+"/5 (≤"+reviewThreshold+")");
+ if(card.value!=null && card.last!=null && card.value>0){
+ const g=Math.abs(card.value-card.last)/card.value;
+ if(g>=gapThreshold) r.push("CL value vs last sale off by "+Math.round(g*100)+"%");
+ }
+ if(card.salesReturned && card.salesCount===0) r.push("no recent comps behind value");
+ card.reviewReasons=r; card.review=r.length>0;
+ }
 
-  function setStatus(item, cls, label, spinner) {
-    item.statusCell.innerHTML = spinner
-      ? '<span class="spinner"></span> <span class="st load">' + label + '</span>'
-      : '<span class="dot ' + cls + '"></span><span class="st ' + cls + '">' + label + '</span>';
-  }
+ // ---- CSV ----
+ function parseCSV(text){
+ const out=[];
+ for(const raw of text.split(/\r?\n/)){
+ const line=raw.trim();if(!line)continue;
+ const p=line.split(",").map(s=>s.trim());if(p.length<2)continue;
+ let grader,cert,cost;
+ if(/^\d+$/.test(p[0])&&!/^\d+$/.test(p[1])){cert=p[0];grader=p[1];cost=p[2];}
+ else{grader=p[0];cert=p[1];cost=p[2];}
+ grader=grader.toLowerCase();
+ if(!/^(psa|bgs|sgc|cgc)$/.test(grader))continue;
+ if(!/^\d+$/.test(cert))continue;
+ const c={grader,cert};if(cost!=null&&/^\d+(\.\d+)?$/.test(cost))c.csvCost=parseFloat(cost);
+ out.push(c);
+ }
+ return out;
+ }
+ function loadFile(f){
+ const rd=new FileReader();
+ rd.onload=()=>{
+ const items=parseCSV(String(rd.result));
+ if(!items.length){rowsEl.innerHTML='<tr><td colspan="13"><div class="empty">No valid <b>grader,cert</b> rows found.</div></td></tr>';
+ runBtn.disabled=true;footL.textContent="0 rows";return;}
+ buildCards(items);renderAll();doneCount=0;barEl.style.width="0";recompute();
+ footR.textContent="ready";runBtn.disabled=false;exportBtn.disabled=true;
+ };
+ rd.readAsText(f);
+ }
+ function buildCards(items){
+ cards=items.map((it,i)=>{
+ const saved=store[skey(it.grader,it.cert)]||{};
+ return {i,cert:it.cert,grader:it.grader,priced:false,error:null,review:false,reviewReasons:[],
+ serverReview:false,salesReturned:false,salesCount:0,sales:[],
+ label:"",year:"",sport:saved.sport||"",sportGuess:false,value:null,last:null,conf:null,
+ cost:saved.cost!=null?saved.cost:(it.csvCost!=null?it.csvCost:null),
+ audit:saved.audit||"",expanded:false,tr:null,detail:null,els:{}};
+ });
+ }
 
-  function bumpValue(add) {
-    totalValue += add;
-    valBig.textContent = fmtMoney(totalValue);
-  }
+ function makeRow(card){
+ const tr=document.createElement("tr");tr.className="main pending";
+ tr.innerHTML=
+ '<td class="c-status"><span class="expand">▸</span><span class="dot wait"></span><span class="st wait">queued</span></td>'+
+ '<td><div class="audit">'+
+ '<button class="abtn confirm" title="Confirm value good"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></button>'+
+ '<button class="abtn flag" title="Flag value / problem"><svg viewBox="0 0 24 24"><path d="M4 21V4h11l-1 4h6l-1 8H6"/></svg></button>'+
+ '</div></td>'+
+ '<td class="cert">'+card.cert+'</td>'+
+ '<td class="grader">'+card.grader+'</td>'+
+ '<td class="label" title="">—</td>'+
+ '<td class="yr">—</td>'+
+ '<td class="c-sport">—</td>'+
+ '<td class="num money c-val">—</td>'+
+ '<td class="num money c-last">—</td>'+
+ '<td class="num conf c-conf">—</td>'+
+ '<td class="num comps c-comps">—</td>'+
+ '<td class="num"><input class="cost-in" type="number" min="0" step="1" placeholder="—" /></td>'+
+ '<td class="num pl c-pl">—</td>';
+ const detail=document.createElement("tr");detail.className="detail hidden";
+ detail.innerHTML='<td colspan="13"><div class="detail-inner">'+
+ '<div><h4>Recent sales (last 3)</h4><div class="c-sales"></div></div>'+
+ '<div><h4>Review assessment</h4><div class="c-reasons reasons"></div><div class="c-ctx ctx"></div></div>'+
+ '</div></td>';
+ card.tr=tr;card.detail=detail;
+ card.els={status:tr.querySelector(".c-status"),label:tr.querySelector(".label"),yr:tr.querySelector(".yr"),
+ sport:tr.querySelector(".c-sport"),val:tr.querySelector(".c-val"),last:tr.querySelector(".c-last"),
+ conf:tr.querySelector(".c-conf"),comps:tr.querySelector(".c-comps"),cost:tr.querySelector(".cost-in"),
+ pl:tr.querySelector(".c-pl"),confirm:tr.querySelector(".abtn.confirm"),flag:tr.querySelector(".abtn.flag"),
+ sales:detail.querySelector(".c-sales"),reasons:detail.querySelector(".c-reasons"),ctx:detail.querySelector(".c-ctx")};
 
-  // ---- one cert -> serverless proxy; single polite retry on rate-limit ----
-  async function priceOne(item, attempt = 0) {
-    setStatus(item, "load", attempt ? "retry…" : "pricing…", true);
-    item.tr.classList.remove("pending");
-    try {
-      const r = await fetch("/api/price", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cert: item.cert, grader: item.grader }),
-      });
-      const j = await r.json();
+ if(card.cost!=null)card.els.cost.value=card.cost;
+ card.els.cost.addEventListener("input",()=>{const v=parseFloat(card.els.cost.value);card.cost=isNaN(v)?null:v;persist(card);paintPL(card);recompute();});
+ card.els.cost.addEventListener("click",e=>e.stopPropagation());
+ card.els.confirm.addEventListener("click",e=>{e.stopPropagation();setAudit(card,card.audit==="confirmed"?"":"confirmed");});
+ card.els.flag.addEventListener("click",e=>{e.stopPropagation();setAudit(card,card.audit==="flagged"?"":"flagged");});
+ tr.addEventListener("click",e=>{ if(e.target.closest("input,button,select"))return; toggleExpand(card); });
+ paintAudit(card);
+ return tr;
+ }
 
-      if (!r.ok) {
-        // 429 or upstream lookup limit -> back off once, then give up gracefully
-        if ((r.status === 429 || j.status === 429) && attempt < 1) {
-          await sleep(3000);
-          return priceOne(item, attempt + 1);
-        }
-        return finishErr(item, "HTTP " + r.status);
-      }
+ function renderAll(){
+ rowsEl.innerHTML="";
+ cards.forEach(c=>{makeRow(c);rowsEl.appendChild(c.tr);rowsEl.appendChild(c.detail);});
+ footL.textContent=cards.length+" rows";
+ rebuildFilterOptions();applyView();
+ }
 
-      const d = j.result && j.result.data ? j.result.data : null;
-      if (!d) return finishErr(item, "no data");
+ function toggleExpand(card){
+ card.expanded=!card.expanded;
+ card.tr.classList.toggle("open",card.expanded);
+ card.detail.classList.toggle("hidden",!card.expanded||card.tr.classList.contains("hidden"));
+ if(card.expanded)renderDetail(card);
+ }
+ function renderDetail(card){
+ if(!card.priced){ card.els.sales.innerHTML='<div class="na">not priced yet</div>'; }
+ else if(card.sales && card.sales.length){
+ const ul=document.createElement("ul");ul.className="sales-list";
+ card.sales.forEach(s=>{const li=document.createElement("li");
+ li.innerHTML='<span class="sd">'+(fmtDate(s.date)||"—")+'</span>'+
+ '<span><span class="sp">'+fmtMoney(s.price)+'</span>'+(s.platform?' <span class="spf">'+s.platform+'</span>':'')+'</span>';
+ ul.appendChild(li);});
+ card.els.sales.innerHTML="";card.els.sales.appendChild(ul);
+ } else {
+ card.els.sales.innerHTML='<div class="na">NA — no recent sales returned</div>';
+ }
+ if(!card.priced){ card.els.reasons.innerHTML='<div class="na">—</div>'; card.els.ctx.textContent=""; return; }
+ if(card.reviewReasons && card.reviewReasons.length){
+ card.els.reasons.innerHTML=card.reviewReasons.map(r=>'<div class="reason"><span class="rd"></span>'+r+'</div>').join("");
+ } else {
+ card.els.reasons.innerHTML='<div class="reason clean"><span class="rd"></span>Auto-priced · no review flags</div>';
+ }
+ const parts=[];
+ if(card.value!=null)parts.push("CL value "+fmtMoney(card.value));
+ if(card.last!=null)parts.push("last sale "+fmtMoney(card.last));
+ if(card.conf!=null)parts.push("confidence "+card.conf+"/5");
+ card.els.ctx.textContent=parts.join(" · ");
+ }
 
-      const hasErr = d.errors && Object.keys(d.errors).length > 0;
-      if (hasErr) {
-        const key = Object.keys(d.errors)[0];
-        // lookup failure is the upstream rate limit resurfacing
-        if (key === "lookup" && attempt < 1) { await sleep(3000); return priceOne(item, attempt + 1); }
-        return finishErr(item, "err:" + key);
-      }
+ // ---- pricing ----
+ const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+ async function priceOne(card,attempt=0){
+ card.els.status.innerHTML='<span class="expand">▸</span><span class="spinner"></span> <span class="st load">'+(attempt?"retry…":"pricing…")+'</span>';
+ card.tr.classList.remove("pending");
+ try{
+ const r=await fetch("/api/price",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cert:card.cert,grader:card.grader})});
+ const j=await r.json();
+ if(!r.ok){ if((r.status===429||j.status===429)&&attempt<1){await sleep(3000);return priceOne(card,attempt+1);} return finishErr(card,"HTTP "+r.status); }
+ const d=j.result&&j.result.data?j.result.data:null;
+ if(!d)return finishErr(card,"no data");
+ const hasErr=d.errors&&Object.keys(d.errors).length>0;
+ if(hasErr){const k=Object.keys(d.errors)[0]; if(k==="lookup"&&attempt<1){await sleep(3000);return priceOne(card,attempt+1);} return finishErr(card,"err:"+k);}
+ return finishOk(card,d);
+ }catch(e){ if(attempt<1){await sleep(2000);return priceOne(card,attempt+1);} return finishErr(card,"network"); }
+ }
+ function finishOk(card,d){
+ const v=d.valuation||{}, m=d.market||{};
+ card.priced=true;card.error=null;
+ card.label=(d.certification&&d.certification.label)||"—";
+ card.year=parseYear(card.label);
+ card.value=typeof v.estimatedValue==="number"?v.estimatedValue:null;
+ card.last=typeof v.lastSalePrice==="number"?v.lastSalePrice:null;
+ card.conf=v.confidence!=null?v.confidence:null;
+ card.serverReview=!!(d.cardsiq&&d.cardsiq.requiresReview);
+ const rs=Array.isArray(m.recentSales)?m.recentSales:[];
+ card.salesReturned=("recentSales" in m);
+ card.salesCount=rs.length; card.sales=rs.slice(0,3);
+ if(!card.sport){const g=guessSport(card.label);if(g){card.sport=g;card.sportGuess=true;}}
+ evalReview(card);
 
-      return finishOk(item, d);
-    } catch (e) {
-      if (attempt < 1) { await sleep(2000); return priceOne(item, attempt + 1); }
-      return finishErr(item, "network");
-    }
-  }
+ card.els.label.textContent=card.label;card.els.label.title=card.label;
+ card.els.yr.textContent=card.year||"—";
+ card.els.val.textContent=fmtMoney(card.value);
+ card.els.last.textContent=fmtMoney(card.last);
+ card.els.conf.innerHTML=card.conf!=null?card.conf+'<span style="color:var(--faint)">/5</span>':"—";
+ paintComps(card);paintSport(card);paintStatus(card);paintPL(card);
+ if(card.expanded)renderDetail(card);
+ card.tr.classList.add("done");
+ advance();rebuildFilterOptions();recompute();applyView();
+ }
+ function finishErr(card,msg){
+ card.priced=false;card.error=msg;card.review=false;
+ card.els.status.innerHTML='<span class="expand">▸</span><span class="dot bad"></span><span class="st bad">'+msg+'</span>';
+ card.tr.classList.add("err");advance();recompute();applyView();
+ }
+ function advance(){doneCount++;barEl.style.width=Math.round(doneCount/cards.length*100)+"%";footR.textContent=doneCount+" / "+cards.length+" processed";}
 
-  function finishOk(item, d) {
-    item.data = d;
-    const v = d.valuation || {};
-    const label = (d.certification && d.certification.label) || "—";
-    const clv = v.estimatedValue;
-    const last = v.lastSalePrice;
-    const conf = v.confidence;
-    const needsReview = (d.cardsiq && d.cardsiq.requiresReview) || (conf != null && conf <= 2);
+ async function runAll(){
+ running=true;stopped=false;runBtn.disabled=true;stopBtn.disabled=false;exportBtn.disabled=true;fileEl.disabled=true;
+ doneCount=0;barEl.style.width="0";
+ const gap=Math.max(0,parseInt(delayEl.value||"0",10));
+ for(const card of cards){ if(stopped)break; if(card.priced||card.error){advance();continue;} await priceOne(card); if(gap&&!stopped)await sleep(gap); }
+ running=false;runBtn.disabled=false;stopBtn.disabled=true;fileEl.disabled=false;exportBtn.disabled=doneCount===0;
+ footR.textContent=stopped?"stopped · "+doneCount+"/"+cards.length
+ :"done · "+cards.filter(c=>c.priced&&!c.review).length+" priced, "+cards.filter(c=>c.review).length+" review, "+cards.filter(c=>c.error).length+" errors";
+ }
 
-    item.labelCell.textContent = label;
-    item.clCell.textContent = fmtMoney(clv);
-    item.lastCell.textContent = fmtMoney(last);
-    item.confCell.innerHTML = conf != null ? conf + '<span style="color:var(--faint)">/5</span>' : "—";
+ // ---- audit + paint ----
+ function setAudit(card,val){card.audit=val;persist(card);paintAudit(card);paintStatus(card);recompute();applyView();}
+ function persist(card){
+ const k=skey(card.grader,card.cert);const rec=store[k]||{};
+ if(card.cost!=null)rec.cost=card.cost;else delete rec.cost;
+ if(card.audit)rec.audit=card.audit;else delete rec.audit;
+ if(card.sport&&!card.sportGuess)rec.sport=card.sport;else delete rec.sport;
+ if(Object.keys(rec).length)store[k]=rec;else delete store[k];saveStore();
+ }
+ function paintAudit(card){
+ card.els.confirm.classList.toggle("on-confirm",card.audit==="confirmed");
+ card.els.flag.classList.toggle("on-flag",card.audit==="flagged");
+ card.tr.classList.toggle("confirmed",card.audit==="confirmed");
+ card.tr.classList.toggle("flagged",card.audit==="flagged");
+ }
+ function statusInner(html){ return '<span class="expand">▸</span>'+html; }
+ function paintStatus(card){
+ if(card.error)return;
+ if(!card.priced){card.els.status.innerHTML=statusInner('<span class="dot wait"></span><span class="st wait">queued</span>');return;}
+ let html;
+ if(card.audit==="confirmed")html='<span class="dot ok"></span><span class="st ok">confirmed</span>';
+ else if(card.audit==="flagged")html='<span class="dot bad"></span><span class="st bad">flagged</span>';
+ else if(card.review)html='<span class="dot review"></span><span class="st review">review</span>';
+ else html='<span class="dot ok"></span><span class="st ok">priced</span>';
+ card.els.status.innerHTML=statusInner(html);
+ card.els.status.title=card.reviewReasons&&card.reviewReasons.length?card.reviewReasons.join(" · "):"";
+ card.tr.classList.toggle("open",card.expanded);
+ }
+ function paintComps(card){
+ if(!card.salesReturned||card.salesCount===0){card.els.comps.textContent="NA";card.els.comps.classList.add("na");}
+ else{card.els.comps.textContent=card.salesCount;card.els.comps.classList.remove("na");}
+ }
+ function paintSport(card){
+ const sel=document.createElement("select");sel.className="sport-in"+(card.sportGuess?" guess":"");
+ for(const s of SPORTS){const o=document.createElement("option");o.value=s;o.textContent=s||"—";if(s===card.sport)o.selected=true;sel.appendChild(o);}
+ sel.addEventListener("click",e=>e.stopPropagation());
+ sel.addEventListener("change",()=>{card.sport=sel.value;card.sportGuess=false;sel.classList.remove("guess");persist(card);rebuildFilterOptions();applyView();});
+ card.els.sport.innerHTML="";card.els.sport.appendChild(sel);
+ }
+ function paintPL(card){
+ const el=card.els.pl;
+ if(card.value==null||card.cost==null||card.cost<=0){el.textContent="—";el.className="num pl";return;}
+ const pl=card.value-card.cost,pct=card.cost>0?(pl/card.cost*100):0;
+ el.className="num pl "+(pl>=0?"pos":"neg");
+ el.innerHTML=(pl>=0?"+":"−")+"$"+Math.abs(pl).toLocaleString("en-US",{maximumFractionDigits:0})+' <span class="plpct">'+(pl>=0?"+":"")+pct.toFixed(0)+'%</span>';
+ }
 
-    if (needsReview) { setStatus(item, "review", "review", false); reviewCount++; cReview.textContent = reviewCount; }
-    else { setStatus(item, "ok", "priced", false); okCount++; cOk.textContent = okCount; }
-    item.tr.classList.add("done");
+ function recompute(){
+ let value=0,cost=0,costedValue=0,ok=0,review=0,err=0;
+ for(const c of cards){
+ if(c.error){err++;continue;}
+ if(c.priced){
+ if(typeof c.value==="number")value+=c.value;
+ if(c.audit==="flagged"){}else if(c.review&&c.audit!=="confirmed"){review++;}else{ok++;}
+ if(c.cost!=null&&c.cost>0){cost+=c.cost;if(typeof c.value==="number")costedValue+=c.value;}
+ }
+ }
+ valBig.textContent=fmtMoney(value);costTot.textContent=fmtMoney(cost);
+ const pl=costedValue-cost;
+ plTot.firstChild.textContent=(pl>=0?"+$":"−$")+Math.abs(pl).toLocaleString("en-US",{maximumFractionDigits:0});
+ plTot.className="val-sub "+(pl>=0?"green":"red");
+ plPct.textContent=cost>0?((pl>=0?"+":"")+(pl/cost*100).toFixed(0)+"%"):"";
+ cOk.textContent=ok;cReview.textContent=review;cErr.textContent=err;
+ }
 
-    if (typeof clv === "number") bumpValue(clv);
-    advance();
-  }
+ // ---- re-evaluate review when thresholds change ----
+ function reEvalAll(){
+ for(const c of cards){ if(c.priced){ evalReview(c); paintStatus(c); if(c.expanded)renderDetail(c);} }
+ recompute();applyView();
+ }
 
-  function finishErr(item, msg) {
-    item.data = { error: msg };
-    setStatus(item, "bad", msg, false);
-    item.tr.classList.add("err");
-    errCount++; cErr.textContent = errCount;
-    advance();
-  }
+ // ---- filter + sort ----
+ function rebuildFilterOptions(){
+ const graders=[...new Set(cards.map(c=>c.grader.toUpperCase()))].sort();
+ const sports=[...new Set(cards.map(c=>c.sport).filter(Boolean))].sort();
+ fillSelect(graderFilter,"All graders",graders,filter.grader);
+ fillSelect(sportFilter,"All sports",sports,filter.sport);
+ }
+ function fillSelect(sel,allLabel,vals,cur){
+ const v=cur||"";sel.innerHTML='<option value="">'+allLabel+'</option>';
+ for(const x of vals){const o=document.createElement("option");o.value=x;o.textContent=x;if(x===v)o.selected=true;sel.appendChild(o);}
+ }
+ function matchStatus(c){
+ switch(filter.status){
+ case "priced":return c.priced&&!c.error;
+ case "review":return c.review&&c.audit!=="confirmed"&&!c.error;
+ case "queue":return c.priced&&c.review&&!c.audit&&!c.error;
+ case "error":return !!c.error;
+ case "confirmed":return c.audit==="confirmed";
+ case "flagged":return c.audit==="flagged";
+ default:return true;
+ }
+ }
+ function matchFilter(c){
+ if(!matchStatus(c))return false;
+ if(filter.grader&&c.grader.toUpperCase()!==filter.grader)return false;
+ if(filter.sport&&c.sport!==filter.sport)return false;
+ if(filter.q){const q=filter.q.toLowerCase();if(!((c.label||"").toLowerCase().includes(q)||c.cert.includes(q)))return false;}
+ return true;
+ }
+ function sortVal(c){
+ switch(sortCol){
+ case "value":return c.value==null?-Infinity:c.value;
+ case "last":return c.last==null?-Infinity:c.last;
+ case "conf":return c.conf==null?-Infinity:c.conf;
+ case "cost":return c.cost==null?-Infinity:c.cost;
+ case "pl":return (c.value!=null&&c.cost)?c.value-c.cost:-Infinity;
+ case "year":return c.year?parseInt(c.year,10):-Infinity;
+ case "cert":return parseInt(c.cert,10)||0;
+ case "label":return (c.label||"").toLowerCase();
+ default:return c.i;
+ }
+ }
+ function applyView(){
+ let vis=cards.filter(matchFilter);
+ if(sortCol)vis=vis.slice().sort((a,b)=>{const x=sortVal(a),y=sortVal(b);if(x<y)return -1*sortDir;if(x>y)return 1*sortDir;return a.i-b.i;});
+ const visSet=new Set(vis);
+ cards.forEach(c=>{const hide=!visSet.has(c);c.tr.classList.toggle("hidden",hide);c.detail.classList.toggle("hidden",hide||!c.expanded);});
+ vis.forEach(c=>{rowsEl.appendChild(c.tr);rowsEl.appendChild(c.detail);});
+ let sumV=0;vis.forEach(c=>{if(typeof c.value==="number")sumV+=c.value;});
+ footL.textContent=vis.length+" of "+cards.length+" shown"+(sumV?" · "+fmtMoney(sumV):"");
+ }
 
-  function advance() {
-    doneCount++;
-    barEl.style.width = Math.round((doneCount / queue.length) * 100) + "%";
-    footR.textContent = doneCount + " / " + queue.length + " processed";
-  }
+ function exportCSV(){
+ const head=["cert","grader","label","year","sport","cl_value","last_sale","confidence","comps","cost","pl","audit","review_reasons","status"];
+ const lines=[head.join(",")];
+ for(const c of cards){
+ const status=c.error?("error:"+c.error):(c.audit||(c.review?"review":"priced"));
+ const pl=(c.value!=null&&c.cost)?(c.value-c.cost):"";
+ const comps=(!c.salesReturned||c.salesCount===0)?"NA":c.salesCount;
+ lines.push([c.cert,c.grader.toUpperCase(),'"'+(c.label||"").replace(/"/g,'""')+'"',c.year||"",c.sport||"",
+ c.value!=null?c.value:"",c.last!=null?c.last:"",c.conf!=null?c.conf:"",comps,
+ c.cost!=null?c.cost:"",pl,c.audit||"",'"'+(c.reviewReasons||[]).join("; ")+'"',status].join(","));
+ }
+ const blob=new Blob([lines.join("\n")],{type:"text/csv"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+ a.download="cardsiq-inventory-"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(a.href);
+ }
 
-  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+ // ---- wiring ----
+ fileEl.addEventListener("change",e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+ drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over");});
+ drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
+ drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");const f=e.dataTransfer.files[0];if(f)loadFile(f);});
+ runBtn.addEventListener("click",()=>{if(!running)runAll();});
+ stopBtn.addEventListener("click",()=>{stopped=true;stopBtn.disabled=true;});
+ exportBtn.addEventListener("click",exportCSV);
+ rthreshEl.addEventListener("change",()=>{reviewThreshold=Math.max(0,Math.min(5,parseInt(rthreshEl.value||"2",10)));reEvalAll();});
+ rgapEl.addEventListener("change",()=>{gapThreshold=Math.max(0,parseInt(rgapEl.value||"30",10))/100;reEvalAll();});
 
-  async function runAll() {
-    running = true; stopped = false;
-    runBtn.disabled = true; stopBtn.disabled = false; exportBtn.disabled = true; fileEl.disabled = true;
-    resetCounters();
-    const gap = Math.max(0, parseInt(delayEl.value || "0", 10));
-
-    for (const item of queue) {
-      if (stopped) break;
-      await priceOne(item);
-      if (gap && !stopped) await sleep(gap);
-    }
-
-    running = false;
-    runBtn.disabled = false; stopBtn.disabled = true; fileEl.disabled = false;
-    exportBtn.disabled = doneCount === 0;
-    footR.textContent = stopped ? "stopped at " + doneCount + " / " + queue.length : "done · " + okCount + " priced, " + reviewCount + " review, " + errCount + " errors";
-  }
-
-  // ---- exports ----
-  function exportCSV() {
-    const head = ["cert","grader","label","cl_value","last_sale","confidence","status"];
-    const lines = [head.join(",")];
-    for (const it of queue) {
-      const d = it.data || {};
-      const v = d.valuation || {};
-      const label = (d.certification && d.certification.label || "").replace(/"/g, '""');
-      const status = d.error ? ("error:" + d.error) : ((d.cardsiq && d.cardsiq.requiresReview) ? "review" : "priced");
-      lines.push([
-        it.cert, it.grader, '"' + label + '"',
-        v.estimatedValue != null ? v.estimatedValue : "",
-        v.lastSalePrice != null ? v.lastSalePrice : "",
-        v.confidence != null ? v.confidence : "",
-        status,
-      ].join(","));
-    }
-    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "cardsiq-inventory-" + new Date().toISOString().slice(0,10) + ".csv";
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
-  // ---- wiring ----
-  function loadFile(f) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const items = parseCSV(String(reader.result));
-      if (!items.length) {
-        rowsEl.innerHTML = '<tr><td colspan="7"><div class="empty">No valid <b>grader,cert</b> rows found. Check the file format.</div></td></tr>';
-        runBtn.disabled = true; footL.textContent = "0 rows";
-        return;
-      }
-      renderTable(items);
-      resetCounters();
-      footR.textContent = "ready";
-    };
-    reader.readAsText(f);
-  }
-
-  fileEl.addEventListener("change", (e) => { if (e.target.files[0]) loadFile(e.target.files[0]); });
-  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
-  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
-  drop.addEventListener("drop", (e) => {
-    e.preventDefault(); drop.classList.remove("over");
-    const f = e.dataTransfer.files[0];
-    if (f) loadFile(f);
-  });
-  runBtn.addEventListener("click", () => { if (!running) runAll(); });
-  stopBtn.addEventListener("click", () => { stopped = true; stopBtn.disabled = true; });
-  exportBtn.addEventListener("click", exportCSV);
+ statusChips.addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
+ [...statusChips.children].forEach(x=>x.classList.remove("active"));b.classList.add("active");filter.status=b.dataset.status;applyView();});
+ graderFilter.addEventListener("change",()=>{filter.grader=graderFilter.value;applyView();});
+ sportFilter.addEventListener("change",()=>{filter.sport=sportFilter.value;applyView();});
+ searchEl.addEventListener("input",()=>{filter.q=searchEl.value.trim();applyView();});
+ document.querySelectorAll("th.sortable").forEach(th=>{
+ th.addEventListener("click",()=>{const col=th.dataset.sort;
+ if(sortCol===col){sortDir*=-1;}else{sortCol=col;sortDir=(col==="label"?1:-1);}
+ document.querySelectorAll("th .arr").forEach(a=>a.remove());
+ const arr=document.createElement("span");arr.className="arr";arr.textContent=sortDir<0?"▼":"▲";th.appendChild(arr);applyView();});
+ });
 })();
 </script>
 </body>
