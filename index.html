@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CardsIQ · Inventory Intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0B1E3F;
+    --navy-2: #0d234a;
+    --panel: #10254c;
+    --panel-2: #142b57;
+    --line: #21365f;
+    --accent: #1FB6FF;
+    --green: #2BE08C;
+    --amber: #FFC24B;
+    --red: #FF5C7A;
+    --text: #EAF1FB;
+    --muted: #8AA0C4;
+    --faint: #5D739B;
+    --grad: linear-gradient(90deg, #1FB6FF 0%, #7A5CFF 55%, #FF5CA8 100%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(31,182,255,0.10), transparent 60%),
+      radial-gradient(900px 500px at -5% 10%, rgba(122,92,255,0.08), transparent 55%),
+      var(--navy);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+
+  /* Header */
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 22px; }
+  .brand { display: flex; align-items: baseline; gap: 12px; }
+  .brand h1 {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 20px;
+    letter-spacing: -0.01em; margin: 0;
+  }
+  .brand .tm { color: var(--accent); }
+  .brand .sub { color: var(--faint); font-size: 12px; font-family: "JetBrains Mono", monospace; letter-spacing: 0.02em; }
+  .apihint { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); }
+  .apihint b { color: var(--muted); font-weight: 500; }
+
+  /* Ticker — the signature: inventory value assembles as cards resolve */
+  .ticker {
+    position: relative; border: 1px solid var(--line); border-radius: 16px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    padding: 22px 24px; margin-bottom: 18px; overflow: hidden;
+  }
+  .ticker::before {
+    content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 100%;
+    background: var(--grad); opacity: 0.9;
+  }
+  .ticker-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 20px; align-items: end; }
+  .val-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); margin-bottom: 8px; }
+  .val-big {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: clamp(34px, 6vw, 56px); line-height: 0.95; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .val-big .cents { color: var(--muted); font-size: 0.5em; font-weight: 600; }
+  .stat .n { font-family: "JetBrains Mono", monospace; font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .n.green { color: var(--green); }
+  .stat .n.red { color: var(--red); }
+  .stat .n.accent { color: var(--accent); }
+  @media (max-width: 720px) { .ticker-grid { grid-template-columns: 1fr 1fr; } }
+
+  /* Progress */
+  .progress { height: 6px; border-radius: 99px; background: #0a1836; margin-top: 18px; overflow: hidden; }
+  .progress > i { display: block; height: 100%; width: 0%; background: var(--grad); transition: width 0.35s ease; }
+
+  /* Controls */
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .drop {
+    flex: 1 1 340px; min-height: 64px; border: 1.5px dashed var(--line); border-radius: 12px;
+    background: rgba(20,43,87,0.5); display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); background: rgba(31,182,255,0.06); }
+  .drop .ico { width: 34px; height: 34px; border-radius: 9px; background: rgba(31,182,255,0.12); display: grid; place-items: center; flex: none; }
+  .drop .ico svg { width: 18px; height: 18px; stroke: var(--accent); }
+  .drop .t { font-size: 13px; line-height: 1.4; }
+  .drop .t b { color: var(--text); font-weight: 600; }
+  .drop .t span { color: var(--faint); font-family: "JetBrains Mono", monospace; font-size: 11px; }
+
+  .field { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .field select, .field input {
+    background: var(--navy-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; font-family: "JetBrains Mono", monospace; font-size: 12px;
+  }
+  .field input[type="number"] { width: 78px; }
+
+  .btn {
+    border: none; border-radius: 10px; padding: 12px 20px; font-weight: 600; font-size: 13px;
+    cursor: pointer; font-family: inherit; letter-spacing: 0.01em; transition: transform 0.06s, filter 0.2s, opacity 0.2s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--grad); color: #fff; }
+  .btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .btn.ghost:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Table */
+  .tablecard { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: rgba(13,35,74,0.55); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint);
+    font-weight: 600; padding: 12px 14px; background: rgba(10,24,54,0.6); border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 2;
+  }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid rgba(33,54,95,0.5); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.25s; }
+  tbody tr.pending { opacity: 0.5; }
+  tbody tr.done { animation: settle 0.5s ease; }
+  @keyframes settle { from { background: rgba(43,224,140,0.10); } to { background: transparent; } }
+  tbody tr.err { animation: settleErr 0.5s ease; }
+  @keyframes settleErr { from { background: rgba(255,92,122,0.10); } to { background: transparent; } }
+
+  .cert { font-family: "JetBrains Mono", monospace; font-weight: 500; }
+  .grader { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; }
+  .label { color: var(--text); max-width: 380px; }
+  .money { font-family: "JetBrains Mono", monospace; font-weight: 700; }
+  .conf { font-family: "JetBrains Mono", monospace; font-size: 11px; }
+
+  /* Status chips + dots */
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .dot.wait { background: var(--faint); }
+  .dot.load { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  .dot.ok { background: var(--green); }
+  .dot.review { background: var(--amber); }
+  .dot.bad { background: var(--red); }
+  @keyframes pulse { 0%,100% { opacity: 0.35; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+  .st { font-size: 11px; font-family: "JetBrains Mono", monospace; }
+  .st.ok { color: var(--green); } .st.bad { color: var(--red); } .st.wait { color: var(--faint); } .st.load { color: var(--accent); } .st.review { color: var(--amber); }
+
+  .spinner { width: 13px; height: 13px; border: 2px solid rgba(31,182,255,0.25); border-top-color: var(--accent); border-radius: 50%; display: inline-block; vertical-align: -2px; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty { padding: 46px 20px; text-align: center; color: var(--faint); font-size: 13px; }
+  .empty svg { width: 30px; height: 30px; stroke: var(--line); margin-bottom: 10px; }
+
+  .foot { margin-top: 14px; font-size: 11px; color: var(--faint); font-family: "JetBrains Mono", monospace; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>CardsIQ<span class="tm">™</span> Inventory Intake</h1>
+      <span class="sub">graded cert → live valuation</span>
+    </div>
+    <div class="apihint">via <b>/api/price</b> · key held server-side</div>
+  </header>
+
+  <!-- Signature: the value assembles as cards resolve -->
+  <section class="ticker">
+    <div class="ticker-grid">
+      <div>
+        <div class="val-label">Inventory value priced</div>
+        <div class="val-big" id="valBig">$0<span class="cents"></span></div>
+      </div>
+      <div class="stat"><div class="val-label">Priced</div><div class="n green" id="cOk">0</div></div>
+      <div class="stat"><div class="val-label">Needs review</div><div class="n" id="cReview" style="color:var(--amber)">0</div></div>
+      <div class="stat"><div class="val-label">Errors</div><div class="n red" id="cErr">0</div></div>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+  </section>
+
+  <div class="controls">
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".csv,text/csv" hidden />
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg></span>
+      <span class="t"><b>Drop a CSV or click to choose</b><br><span>format: grader,cert  (e.g. PSA,115730219)</span></span>
+    </label>
+    <div class="field">
+      <span>gap</span>
+      <input type="number" id="delay" value="500" min="0" step="100" title="Milliseconds between lookups" />
+      <span>ms</span>
+    </div>
+    <button class="btn primary" id="run" disabled>Start pricing</button>
+    <button class="btn ghost" id="stop" disabled>Stop</button>
+    <button class="btn ghost" id="export" disabled>Export CSV</button>
+  </div>
+
+  <div class="tablecard">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:150px">Status</th>
+          <th style="width:120px">Cert</th>
+          <th style="width:60px">Grader</th>
+          <th>Card</th>
+          <th class="num" style="width:110px">CL Value</th>
+          <th class="num" style="width:110px">Last Sale</th>
+          <th class="num" style="width:70px">Conf</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="7"><div class="empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h10"/></svg><br>
+          No cards loaded. Drop a CSV to begin.
+        </div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="foot">
+    <span id="footL">0 rows</span>
+    <span id="footR">idle</span>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const fileEl = $("file"), drop = $("drop"), rowsEl = $("rows");
+  const runBtn = $("run"), stopBtn = $("stop"), exportBtn = $("export");
+  const barEl = $("bar"), valBig = $("valBig");
+  const cOk = $("cOk"), cReview = $("cReview"), cErr = $("cErr");
+  const footL = $("footL"), footR = $("footR"), delayEl = $("delay");
+
+  let queue = [];        // [{cert, grader, tr, cells, state, data}]
+  let running = false, stopped = false;
+  let totalValue = 0, okCount = 0, reviewCount = 0, errCount = 0, doneCount = 0;
+
+  // ---- CSV parsing: grader,cert per line; tolerant of header + stray spaces ----
+  function parseCSV(text) {
+    const out = [];
+    for (const raw of text.split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!line) continue;
+      const parts = line.split(",").map(s => s.trim());
+      if (parts.length < 2) continue;
+      let [a, b] = parts;
+      // Accept either "grader,cert" or "cert,grader"; grader is the non-numeric one.
+      let grader, cert;
+      if (/^\d+$/.test(a) && !/^\d+$/.test(b)) { cert = a; grader = b; }
+      else { grader = a; cert = b; }
+      grader = grader.toLowerCase();
+      if (!/^(psa|bgs|sgc|cgc)$/.test(grader)) continue;   // skip header/junk lines
+      if (!/^\d+$/.test(cert)) continue;
+      out.push({ cert, grader });
+    }
+    return out;
+  }
+
+  function fmtMoney(n) {
+    if (n == null || isNaN(n)) return "—";
+    return "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  }
+
+  function renderTable(items) {
+    rowsEl.innerHTML = "";
+    queue = items.map((it) => {
+      const tr = document.createElement("tr");
+      tr.className = "pending";
+      tr.innerHTML =
+        '<td><span class="dot wait"></span><span class="st wait">queued</span></td>' +
+        '<td class="cert">' + it.cert + '</td>' +
+        '<td class="grader">' + it.grader + '</td>' +
+        '<td class="label">—</td>' +
+        '<td class="num money">—</td>' +
+        '<td class="num money">—</td>' +
+        '<td class="num conf">—</td>';
+      rowsEl.appendChild(tr);
+      return {
+        cert: it.cert, grader: it.grader, tr,
+        statusCell: tr.children[0], labelCell: tr.children[3],
+        clCell: tr.children[4], lastCell: tr.children[5], confCell: tr.children[6],
+        data: null,
+      };
+    });
+    footL.textContent = queue.length + " rows";
+    runBtn.disabled = queue.length === 0;
+    exportBtn.disabled = true;
+  }
+
+  function resetCounters() {
+    totalValue = okCount = reviewCount = errCount = doneCount = 0;
+    valBig.innerHTML = "$0";
+    cOk.textContent = cReview.textContent = cErr.textContent = "0";
+    barEl.style.width = "0%";
+  }
+
+  function setStatus(item, cls, label, spinner) {
+    item.statusCell.innerHTML = spinner
+      ? '<span class="spinner"></span> <span class="st load">' + label + '</span>'
+      : '<span class="dot ' + cls + '"></span><span class="st ' + cls + '">' + label + '</span>';
+  }
+
+  function bumpValue(add) {
+    totalValue += add;
+    valBig.textContent = fmtMoney(totalValue);
+  }
+
+  // ---- one cert -> serverless proxy; single polite retry on rate-limit ----
+  async function priceOne(item, attempt = 0) {
+    setStatus(item, "load", attempt ? "retry…" : "pricing…", true);
+    item.tr.classList.remove("pending");
+    try {
+      const r = await fetch("/api/price", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cert: item.cert, grader: item.grader }),
+      });
+      const j = await r.json();
+
+      if (!r.ok) {
+        // 429 or upstream lookup limit -> back off once, then give up gracefully
+        if ((r.status === 429 || j.status === 429) && attempt < 1) {
+          await sleep(3000);
+          return priceOne(item, attempt + 1);
+        }
+        return finishErr(item, "HTTP " + r.status);
+      }
+
+      const d = j.result && j.result.data ? j.result.data : null;
+      if (!d) return finishErr(item, "no data");
+
+      const hasErr = d.errors && Object.keys(d.errors).length > 0;
+      if (hasErr) {
+        const key = Object.keys(d.errors)[0];
+        // lookup failure is the upstream rate limit resurfacing
+        if (key === "lookup" && attempt < 1) { await sleep(3000); return priceOne(item, attempt + 1); }
+        return finishErr(item, "err:" + key);
+      }
+
+      return finishOk(item, d);
+    } catch (e) {
+      if (attempt < 1) { await sleep(2000); return priceOne(item, attempt + 1); }
+      return finishErr(item, "network");
+    }
+  }
+
+  function finishOk(item, d) {
+    item.data = d;
+    const v = d.valuation || {};
+    const label = (d.certification && d.certification.label) || "—";
+    const clv = v.estimatedValue;
+    const last = v.lastSalePrice;
+    const conf = v.confidence;
+    const needsReview = (d.cardsiq && d.cardsiq.requiresReview) || (conf != null && conf <= 2);
+
+    item.labelCell.textContent = label;
+    item.clCell.textContent = fmtMoney(clv);
+    item.lastCell.textContent = fmtMoney(last);
+    item.confCell.innerHTML = conf != null ? conf + '<span style="color:var(--faint)">/5</span>' : "—";
+
+    if (needsReview) { setStatus(item, "review", "review", false); reviewCount++; cReview.textContent = reviewCount; }
+    else { setStatus(item, "ok", "priced", false); okCount++; cOk.textContent = okCount; }
+    item.tr.classList.add("done");
+
+    if (typeof clv === "number") bumpValue(clv);
+    advance();
+  }
+
+  function finishErr(item, msg) {
+    item.data = { error: msg };
+    setStatus(item, "bad", msg, false);
+    item.tr.classList.add("err");
+    errCount++; cErr.textContent = errCount;
+    advance();
+  }
+
+  function advance() {
+    doneCount++;
+    barEl.style.width = Math.round((doneCount / queue.length) * 100) + "%";
+    footR.textContent = doneCount + " / " + queue.length + " processed";
+  }
+
+  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  async function runAll() {
+    running = true; stopped = false;
+    runBtn.disabled = true; stopBtn.disabled = false; exportBtn.disabled = true; fileEl.disabled = true;
+    resetCounters();
+    const gap = Math.max(0, parseInt(delayEl.value || "0", 10));
+
+    for (const item of queue) {
+      if (stopped) break;
+      await priceOne(item);
+      if (gap && !stopped) await sleep(gap);
+    }
+
+    running = false;
+    runBtn.disabled = false; stopBtn.disabled = true; fileEl.disabled = false;
+    exportBtn.disabled = doneCount === 0;
+    footR.textContent = stopped ? "stopped at " + doneCount + " / " + queue.length : "done · " + okCount + " priced, " + reviewCount + " review, " + errCount + " errors";
+  }
+
+  // ---- exports ----
+  function exportCSV() {
+    const head = ["cert","grader","label","cl_value","last_sale","confidence","status"];
+    const lines = [head.join(",")];
+    for (const it of queue) {
+      const d = it.data || {};
+      const v = d.valuation || {};
+      const label = (d.certification && d.certification.label || "").replace(/"/g, '""');
+      const status = d.error ? ("error:" + d.error) : ((d.cardsiq && d.cardsiq.requiresReview) ? "review" : "priced");
+      lines.push([
+        it.cert, it.grader, '"' + label + '"',
+        v.estimatedValue != null ? v.estimatedValue : "",
+        v.lastSalePrice != null ? v.lastSalePrice : "",
+        v.confidence != null ? v.confidence : "",
+        status,
+      ].join(","));
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "cardsiq-inventory-" + new Date().toISOString().slice(0,10) + ".csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ---- wiring ----
+  function loadFile(f) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const items = parseCSV(String(reader.result));
+      if (!items.length) {
+        rowsEl.innerHTML = '<tr><td colspan="7"><div class="empty">No valid <b>grader,cert</b> rows found. Check the file format.</div></td></tr>';
+        runBtn.disabled = true; footL.textContent = "0 rows";
+        return;
+      }
+      renderTable(items);
+      resetCounters();
+      footR.textContent = "ready";
+    };
+    reader.readAsText(f);
+  }
+
+  fileEl.addEventListener("change", (e) => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", (e) => {
+    e.preventDefault(); drop.classList.remove("over");
+    const f = e.dataTransfer.files[0];
+    if (f) loadFile(f);
+  });
+  runBtn.addEventListener("click", () => { if (!running) runAll(); });
+  stopBtn.addEventListener("click", () => { stopped = true; stopBtn.disabled = true; });
+  exportBtn.addEventListener("click", exportCSV);
+})();
+</script>
+</body>
+</html>
